@@ -18,6 +18,15 @@ jobs:
 
       - name: Build APK with Gradle
         run: |
+          GRADLEW_PATH=$(find . -name "gradlew" -type f | head -n 1)
+          if [ -z "$GRADLEW_PATH" ]; then
+            echo "Файл gradlew не найден вообще! Вот список файлов в проекте:"
+            ls -laR
+            exit 1
+          fi
+          DIR=$(dirname "$GRADLEW_PATH")
+          echo "Найден Gradle wrapper в: $DIR"
+          cd "$DIR"
           chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
 
@@ -25,5 +34,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: launcher-debug-apk
-          path: "**/build/outputs/apk/debug/*.apk"
-          
+          path: "**/build/outputs/apk/**/*.apk"
