@@ -16,22 +16,21 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Build APK with Gradle
+      - name: Install Android SDK platform & build tools
         run: |
-          GRADLEW_PATH=$(find . -name "gradlew" -type f | head -n 1)
-          if [ -z "$GRADLEW_PATH" ]; then
-            echo "Файл gradlew не найден вообще! Вот список файлов в проекте:"
-            ls -laR
-            exit 1
-          fi
-          DIR=$(dirname "$GRADLEW_PATH")
-          echo "Найден Gradle wrapper в: $DIR"
-          cd "$DIR"
-          chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+
+      - name: Build APK with native build.sh
+        run: |
+          chmod +x ./build.sh
+          # При первом запуске создается конфиг по умолчанию
+          ./build.sh || true
+          # Запуск сборки
+          ./build.sh
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: launcher-debug-apk
-          path: "**/build/outputs/apk/**/*.apk"
+          name: free-my-tv-apk
+          path: "**/*.apk"
